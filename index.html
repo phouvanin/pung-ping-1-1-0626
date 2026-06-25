@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<title>ໂປຣ ເຂົ້າໜົມປັງປີ້ງ 1 ແຖມ 1 — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --cream:#FFF8EC;
+    --toast:#7A4A23;
+    --honey:#D98E2C;
+    --honey-deep:#B36F1B;
+    --honey-light:#F4D9A4;
+    --mint:#7FB7A3;
+    --line:#EFE0C2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    font-family:'Noto Sans Lao','Segoe UI',sans-serif;
+    color:var(--toast);
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+  header{
+    display:flex;align-items:center;gap:18px;
+    border-bottom:3px solid var(--honey);
+    padding-bottom:18px;margin-bottom:26px;
+  }
+  .toast-icon{
+    width:54px;height:54px;border-radius:8px;
+    background:linear-gradient(135deg, var(--honey-light), var(--honey) 55%, var(--honey-deep));
+    flex-shrink:0;
+    box-shadow:0 3px 8px rgba(179,111,27,0.35);
+  }
+  h1{font-size:1.5rem;font-weight:800;letter-spacing:.2px;}
+  .sub{color:var(--honey-deep);font-size:.92rem;margin-top:3px;}
+  .badge{
+    margin-left:auto;background:var(--honey-deep);color:#fff;
+    font-size:.78rem;padding:6px 14px;border-radius:20px;font-weight:600;
+  }
+
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:30px;}
+  @media (max-width:760px){.cards{grid-template-columns:repeat(2,1fr);}}
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:18px 18px 16px;position:relative;overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;top:0;left:0;width:5px;height:100%;
+    background:var(--honey);
+  }
+  .card .label{font-size:.78rem;color:var(--honey-deep);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+  .card .value{font-size:1.7rem;font-weight:800;margin-top:6px;color:var(--toast);}
+  .card .note{font-size:.78rem;color:#a8825a;margin-top:4px;}
+
+  .panel{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:22px;margin-bottom:24px;
+  }
+  .panel h2{font-size:1.05rem;font-weight:700;margin-bottom:14px;color:var(--toast);}
+  .chart-box{height:320px;}
+
+  table{width:100%;border-collapse:collapse;font-size:.88rem;}
+  th{
+    text-align:left;color:var(--honey-deep);font-weight:700;
+    border-bottom:2px solid var(--line);padding:9px 8px;
+    font-size:.78rem;text-transform:uppercase;letter-spacing:.3px;
+  }
+  td{padding:9px 8px;border-bottom:1px solid var(--line);}
+  tr:hover td{background:#FFFAF0;}
+  .zero{color:#d4ba8c;}
+  .pill{
+    display:inline-block;padding:2px 9px;border-radius:10px;
+    background:var(--honey-light);color:var(--toast);font-weight:700;font-size:.78rem;
+  }
+  .pill.hit{background:var(--mint);color:#fff;}
+  footer{text-align:center;color:#c0a37a;font-size:.78rem;margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="toast-icon"></div>
+    <div>
+      <h1>ໂປຣໂມຊັນ ເຂົ້າໜົມປັງປີ້ງ 1 ແຖມ 1</h1>
+      <div class="sub">ຮ້ານກ້ວຍຕ໋ຽວໄຂ່ຍ້ອນຍຸກ @ Friendship Mall · ແຖມກະແລັມ 60g ຕໍ່ 1 ເຊັດ</div>
+    </div>
+    <div class="badge">ມິຖຸນາ 2026</div>
+  </header>
+
+  <div class="cards">
+    <div class="card">
+      <div class="label">ຍອດໃຊ້ໂປຣທັງໝົດ</div>
+      <div class="value" id="totalQty">-</div>
+      <div class="note">ເຊັດ (ກະແລັມແຖມ)</div>
+    </div>
+    <div class="card">
+      <div class="label">ສະເລ່ຍຕໍ່ວັນ</div>
+      <div class="value" id="avgQty">-</div>
+      <div class="note">ເຊັດ/ວັນ · ເປົ້າ 10</div>
+    </div>
+    <div class="card">
+      <div class="label">ວັນທີ່ບໍ່ຮອດເປົ້າ</div>
+      <div class="value" id="missDays">-</div>
+      <div class="note">ຈາກ 18 ວັນ</div>
+    </div>
+    <div class="card">
+      <div class="label">ວັນທີ່ບໍ່ມີຍອດ</div>
+      <div class="value" id="zeroDays">-</div>
+      <div class="note">ຈາກ 18 ວັນ</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>ຍອດຂາຍລາຍວັນ vs ເປົ້າໝາຍ (10 ເຊັດ/ວັນ)</h2>
+    <div class="chart-box"><canvas id="usageChart"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>ລາຍລະອຽດແຍກຕາມວັນ</h2>
+    <table>
+      <thead>
+        <tr><th>ວັນ (ມິຖຸນາ)</th><th>ຈຳນວນເຊັດ</th><th>ບິນ</th><th>ທຽບເປົ້າ (10)</th></tr>
+      </thead>
+      <tbody id="tblBody"></tbody>
+    </table>
+  </div>
+
+  <footer>ສ້າງຈາກໄຟລ໌ ເຂ_າຫນ_ມປ_ງປ_ງ_1_ແຖມ_1.xlsx · 1–18 ມິຖຸນາ 2026</footer>
+</div>
+
+<script>
+const TARGET = 10;
+const data = [
+  {day:1,qty:4,tx:3},{day:2,qty:7,tx:4},{day:3,qty:3,tx:2},{day:4,qty:9,tx:7},
+  {day:5,qty:4,tx:2},{day:6,qty:1,tx:1},{day:7,qty:11,tx:7},{day:8,qty:1,tx:1},
+  {day:9,qty:0,tx:0},{day:10,qty:4,tx:3},{day:11,qty:2,tx:1},{day:12,qty:1,tx:1},
+  {day:13,qty:2,tx:1},{day:14,qty:8,tx:5},{day:15,qty:6,tx:4},{day:16,qty:4,tx:3},
+  {day:17,qty:7,tx:4},{day:18,qty:6,tx:3},
+];
+
+const fmt = n => n.toLocaleString('en-US');
+const totalQty = data.reduce((a,d)=>a+d.qty,0);
+document.getElementById('totalQty').textContent = fmt(totalQty);
+document.getElementById('avgQty').textContent = (totalQty/data.length).toFixed(1);
+document.getElementById('missDays').textContent = data.filter(d=>d.qty<TARGET).length;
+document.getElementById('zeroDays').textContent = data.filter(d=>d.qty===0).length;
+
+const tbody = document.getElementById('tblBody');
+data.forEach(d=>{
+  const tr = document.createElement('tr');
+  const z = d.qty===0 ? 'zero' : '';
+  const hit = d.qty>=TARGET;
+  const diff = d.qty-TARGET;
+  tr.innerHTML = `
+    <td>${d.day}</td>
+    <td class="${z}">${d.qty>0?`<span class="pill ${hit?'hit':''}">${d.qty}</span>`:'-'}</td>
+    <td class="${z}">${d.tx||'-'}</td>
+    <td class="${z}">${hit? '✅ ບັນລຸເປົ້າ' : (diff===-TARGET? '-' : `${diff>=0?'+':''}${diff}`) }</td>`;
+  tbody.appendChild(tr);
+});
+
+const labels = data.map(d=>d.day);
+const honey = '#D98E2C', deep='#B36F1B', mint='#7FB7A3';
+
+new Chart(document.getElementById('usageChart'), {
+  type:'bar',
+  data:{labels, datasets:[
+    {label:'ຍອດຂາຍຈິງ (ເຊັດ)', data:data.map(d=>d.qty),
+      backgroundColor: data.map(d=> d.qty>=TARGET ? mint : honey),
+      borderRadius:6, maxBarThickness:30, order:2},
+    {label:`ເປົ້າ ${TARGET} ເຊັດ/ວັນ`, data:labels.map(()=>TARGET), type:'line',
+      borderColor:deep, borderWidth:2, borderDash:[6,4], pointRadius:0, fill:false, order:1}
+  ]},
+  options:{responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:true, labels:{color:'#a8825a', font:{size:11}}}},
+    scales:{ y:{beginAtZero:true, ticks:{stepSize:2, color:'#a8825a'}, grid:{color:'#F6EBD2'}},
+             x:{title:{display:true,text:'ວັນ (ມິຖຸນາ)',color:'#a8825a'}, grid:{display:false}, ticks:{color:'#a8825a'}}}
+  }
+});
+</script>
+</body>
+</html>
